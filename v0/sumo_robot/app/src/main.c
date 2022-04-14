@@ -1,150 +1,137 @@
 #include "stm8s.h"
 #include "uart.h"
 #include "ultrasonic_sensor.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "int_to_str.h"
 
-uint8_t tim3_value;
-float distance;
-int rise_fall = 1;
+// triger for ultrasonic sensor
+#define trig_port GPIOC
+#define trig_pin GPIO_PIN_4
 
+// echo for ultrasonic sensor
+#define echo_port GPIOD
+#define echo_pin GPIO_PIN_3
+
+// on board led for testing 
+#define on_board_led_port GPIOC
+#define on_board_led_pin GPIO_PIN_5
+
+// input from infrared sensor on the right
+#define ir_sensor_right_port GPIOE
+#define ir_sensor_right_pin GPIO_PIN_5
+
+// input from infrared sensor on the right
+#define ir_sensor_left_port GPIOC
+#define ir_sensor_left_pin GPIO_PIN_6
+
+// output motor driver A-1A
+#define motor_driver_A1A_port GPIOD
+#define motor_driver_A1A_pin GPIO_PIN_1
+
+// output motor driver A-1B
+#define motor_driver_A1B_port GPIOC
+#define motor_driver_A1B_pin GPIO_PIN_3
+
+// output motor driver B-1A
+#define motor_driver_B1A_port GPIOC
+#define motor_driver_B1A_pin GPIO_PIN_2
+
+// output motor driver B-1B
+#define motor_driver_B1B_port GPIOG
+#define motor_driver_B1B_pin GPIO_PIN_0
+
+
+// declere needed global variables
+uint16_t tim3_value; 
+float distance; 
+int rise_fall = 1; 
+
+
+// interrupt handler for ultrasonic sensor 
 INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler, 6)
 {
+    // if interrupt caused by rise edge -> reset timer 3 and set that next interrupt had to be fall edge
     if (rise_fall)
     {
         tim3_reset();
         rise_fall = 0;
     }
-    else{
-        tim3_value = TIM4_GetCounter();
+    // else if interrupt caused by fall edge -> write timer 3 counter value into variable and set that next interrupt had to be rise edge
+    else if(!(rise_fall))
+    {
+        tim3_value = TIM3_GetCounter();
         rise_fall = 1;
     }
-    
 }
 
 
-
-uint8_t button_is_pressed(void){
-    return (!(GPIO_ReadInputPin(GPIOE, GPIO_PIN_4)));
+// interrupt handler for right infrared sensor
+INTERRUPT_HANDLER(EXTI_PORTE_IRQHandler, 7)
+{
+    send_str("Right infrared sensor is on black (logical 0)\n\r");
 }
 
+// interrupt handler for left infrared sensor
+INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
+{
+    send_str("Left infrared sensor is on black (logical 0)\n\r");
+}
 
 void main(void)
 {
     CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1); // FREQ MCU 16MHz
-    GPIO_Init(GPIOC, GPIO_PIN_5, GPIO_MODE_OUT_PP_LOW_SLOW);
-    GPIO_Init(GPIOC, GPIO_PIN_4, GPIO_MODE_OUT_PP_LOW_SLOW); // trig
-    GPIO_Init(GPIOD, GPIO_PIN_3, GPIO_MODE_IN_FL_IT); // echo
-    //GPIO_ExternalPullUpConfig(GPIOD, GPIO_PIN_3, ENABLE);
+    GPIO_Init(on_board_led_port, on_board_led_pin, GPIO_MODE_OUT_PP_LOW_SLOW); // init on board led
 
-    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOD, EXTI_SENSITIVITY_RISE_FALL);
-    ITC_SetSoftwarePriority(ITC_IRQ_PORTE, ITC_PRIORITYLEVEL_0);
+    // ultrasonic sensor init ports
+    //GPIO_Init(trig_port, trig_pin, GPIO_MODE_OUT_PP_LOW_SLOW); // trig
+    //GPIO_Init(echo_port, echo_pin, GPIO_MODE_IN_FL_IT); // echo
+
+    // infrared sensor init ports
+    //GPIO_Init(ir_sensor_left_port, ir_sensor_left_pin, GPIO_MODE_IN_FL_IT);
+    //GPIO_Init(ir_sensor_right_port, ir_sensor_right_pin, GPIO_MODE_IN_FL_IT);
+
+    // motor driver init ports
+    GPIO_Init(motor_driver_A1A_port, motor_driver_A1A_pin, GPIO_MODE_OUT_PP_LOW_SLOW);
+    GPIO_Init(motor_driver_A1B_port, motor_driver_A1B_pin, GPIO_MODE_OUT_PP_LOW_SLOW);
+    GPIO_Init(motor_driver_B1A_port, motor_driver_B1A_pin, GPIO_MODE_OUT_PP_LOW_SLOW);
+    GPIO_Init(motor_driver_B1B_port, motor_driver_B1B_pin, GPIO_MODE_OUT_PP_LOW_SLOW);
+
+    // infrared sensors interrupts
+    //EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOE, EXTI_SENSITIVITY_FALL_ONLY); // interrupts settup for port E - right ir sensor
+    //EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOC, EXTI_SENSITIVITY_FALL_ONLY); // interrupts settup for port C - left ir sensor
+    //ITC_SetSoftwarePriority(ITC_IRQ_PORTE, ITC_PRIORITYLEVEL_0); //interrupts priorities for port E
+    //ITC_SetSoftwarePriority(ITC_IRQ_PORTC, ITC_PRIORITYLEVEL_0); //interrupts priorities for port C
+
+    // ultrasonic sensor interrupts 
+    //EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOD, EXTI_SENSITIVITY_RISE_FALL); // interrupts settup for port D
+    //ITC_SetSoftwarePriority(ITC_IRQ_PORTD, ITC_PRIORITYLEVEL_0);
+
     enableInterrupts();
-
-    uart1_init();
+    
+    //uart1_init();
     tim4_init();
-    tim3_init();
+    //tim3_init();
 
     while (1)
     {
+        GPIO_WriteLow(motor_driver_A1B_port, motor_driver_A1B_pin);
+        GPIO_WriteLow(motor_driver_B1B_port, motor_driver_B1B_pin);
+        
+        GPIO_WriteHigh(motor_driver_A1A_port, motor_driver_A1A_pin);
+        GPIO_WriteHigh(motor_driver_B1A_port, motor_driver_B1A_pin);
 
-        distance = tim3_get_distance(tim3_value);
-
-        /*if (tim3_value < 1)
-        {
-            send_str("<3\n\r");
-        }
-        else if (tim3_value < 10)
-        {
-            send_str("<5\n\r");
-        }
-        else if (tim4_value < 20)
-        {
-            send_str("<7\n\r");
-        }
-        else if (tim4_value < 30)
-        {
-            send_str("<9\n\r");
-        }
-        else if (tim4_value < 11)
-        {
-            send_str("<11\n\r");
-        }
-        else if (tim4_value < 13)
-        {
-            send_str("<13\n\r");
-        }
-        else if (tim4_value < 15)
-        {
-            send_str("<15\n\r");
-        }
-        else if (tim4_value < 17)
-        {
-            send_str("<17\n\r");
-        }
-        else if (tim4_value < 19)
-        {
-            send_str("<19\n\r");
-        }
-        else if (tim4_value < 21)
-        {
-            send_str("<21\n\r");
-        }
-        else if (tim4_value > 21)
-        {
-            send_str("over 21\n\r");
-        }*/
-
-        if (distance < 3)
-        {
-            send_str("<3\n\r");
-        }
-        else if (distance < 5)
-        {
-            send_str("<5\n\r");
-        }
-        else if (distance < 7)
-        {
-            send_str("<7\n\r");
-        }
-        else if (distance < 9)
-        {
-            send_str("<9\n\r");
-        }
-        else if (distance < 11)
-        {
-            send_str("<11\n\r");
-        }
-        else if (distance < 13)
-        {
-            send_str("<13\n\r");
-        }
-        else if (distance < 15)
-        {
-            send_str("<15\n\r");
-        }
-        else if (distance < 17)
-        {
-            send_str("<17\n\r");
-        }
-        else if (distance < 19)
-        {
-            send_str("<19\n\r");
-        }
-        else if (distance < 21)
-        {
-            send_str("<21\n\r");
-        }
-        else if (distance > 21)
-        {
-            send_str("over 21\n\r");
-        }
-
-        GPIO_WriteLow(GPIOC, GPIO_PIN_4);
-        delay_ms(1);
-        GPIO_WriteHigh(GPIOC, GPIO_PIN_4);
         delay_ms(100);
-        //send_str("CYKLUS\n\r");
-        //GPIO_WriteLow(GPIOC, GPIO_PIN_4);*/
+
+        GPIO_WriteLow(motor_driver_A1A_port, motor_driver_A1A_pin);
+        GPIO_WriteLow(motor_driver_B1A_port, motor_driver_B1A_pin);
+
+        GPIO_WriteHigh(motor_driver_A1B_port, motor_driver_A1B_pin);
+        GPIO_WriteHigh(motor_driver_B1B_port, motor_driver_B1B_pin);
+
+        /*distance = tim3_get_distance(tim3_value);
+        uint16_t distance_to_sent = distance;
+        send_str(int_to_str(distance_to_sent)); 
+        send_str("\n\r");*/
+         
+
     }
 }

@@ -1,3 +1,4 @@
+/* for debugging, for communication with the stm */
 #include "uart.h"
 
 void uart1_init(void)
