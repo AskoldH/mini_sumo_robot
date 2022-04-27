@@ -11,9 +11,8 @@ void tim4_reset(void)
     TIM4_SetCounter(0);
 }
 
-void delay_ms(uint32_t time_ms = 1)
+void delay_ms(uint32_t time_ms)
 {
-    
     tim4_reset();
     for(int ms = 0; ms < time_ms; ms++)
     {

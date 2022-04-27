@@ -2,6 +2,8 @@
 #include "uart.h"
 #include "ultrasonic_sensor.h"
 #include "int_to_str.h"
+#include "delay.h"
+#include "moving.h"
 
 // triger for ultrasonic sensor
 #define trig_port GPIOC
@@ -22,22 +24,6 @@
 // input from infrared sensor on the right
 #define ir_sensor_left_port GPIOC
 #define ir_sensor_left_pin GPIO_PIN_6
-
-// output motor driver A-1A
-#define motor_driver_A1A_port GPIOD
-#define motor_driver_A1A_pin GPIO_PIN_1
-
-// output motor driver A-1B
-#define motor_driver_A1B_port GPIOC
-#define motor_driver_A1B_pin GPIO_PIN_3
-
-// output motor driver B-1A
-#define motor_driver_B1A_port GPIOC
-#define motor_driver_B1A_pin GPIO_PIN_2
-
-// output motor driver B-1B
-#define motor_driver_B1B_port GPIOG
-#define motor_driver_B1B_pin GPIO_PIN_0
 
 
 // declere needed global variables
@@ -86,20 +72,14 @@ void main(void)
     //GPIO_Init(echo_port, echo_pin, GPIO_MODE_IN_FL_IT); // echo
 
     // infrared sensor init ports
-    //GPIO_Init(ir_sensor_left_port, ir_sensor_left_pin, GPIO_MODE_IN_FL_IT);
-    //GPIO_Init(ir_sensor_right_port, ir_sensor_right_pin, GPIO_MODE_IN_FL_IT);
-
-    // motor driver init ports
-    GPIO_Init(motor_driver_A1A_port, motor_driver_A1A_pin, GPIO_MODE_OUT_PP_LOW_SLOW);
-    GPIO_Init(motor_driver_A1B_port, motor_driver_A1B_pin, GPIO_MODE_OUT_PP_LOW_SLOW);
-    GPIO_Init(motor_driver_B1A_port, motor_driver_B1A_pin, GPIO_MODE_OUT_PP_LOW_SLOW);
-    GPIO_Init(motor_driver_B1B_port, motor_driver_B1B_pin, GPIO_MODE_OUT_PP_LOW_SLOW);
+    GPIO_Init(ir_sensor_left_port, ir_sensor_left_pin, GPIO_MODE_IN_FL_IT);
+    GPIO_Init(ir_sensor_right_port, ir_sensor_right_pin, GPIO_MODE_IN_FL_IT);
 
     // infrared sensors interrupts
-    //EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOE, EXTI_SENSITIVITY_FALL_ONLY); // interrupts settup for port E - right ir sensor
-    //EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOC, EXTI_SENSITIVITY_FALL_ONLY); // interrupts settup for port C - left ir sensor
-    //ITC_SetSoftwarePriority(ITC_IRQ_PORTE, ITC_PRIORITYLEVEL_0); //interrupts priorities for port E
-    //ITC_SetSoftwarePriority(ITC_IRQ_PORTC, ITC_PRIORITYLEVEL_0); //interrupts priorities for port C
+    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOE, EXTI_SENSITIVITY_RISE_ONLY); // interrupts settup for port E - right ir sensor
+    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOC, EXTI_SENSITIVITY_RISE_ONLY); // interrupts settup for port C - left ir sensor
+    ITC_SetSoftwarePriority(ITC_IRQ_PORTE, ITC_PRIORITYLEVEL_0); //interrupts priorities for port E
+    ITC_SetSoftwarePriority(ITC_IRQ_PORTC, ITC_PRIORITYLEVEL_0); //interrupts priorities for port C
 
     // ultrasonic sensor interrupts 
     //EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOD, EXTI_SENSITIVITY_RISE_FALL); // interrupts settup for port D
@@ -107,31 +87,18 @@ void main(void)
 
     enableInterrupts();
     
-    //uart1_init();
+    uart1_init();
     tim4_init();
-    //tim3_init();
+    tim3_init();
+    motor_pins_init();
 
     while (1)
     {
-        GPIO_WriteLow(motor_driver_A1B_port, motor_driver_A1B_pin);
-        GPIO_WriteLow(motor_driver_B1B_port, motor_driver_B1B_pin);
-        
-        GPIO_WriteHigh(motor_driver_A1A_port, motor_driver_A1A_pin);
-        GPIO_WriteHigh(motor_driver_B1A_port, motor_driver_B1A_pin);
-
-        delay_ms(100);
-
-        GPIO_WriteLow(motor_driver_A1A_port, motor_driver_A1A_pin);
-        GPIO_WriteLow(motor_driver_B1A_port, motor_driver_B1A_pin);
-
-        GPIO_WriteHigh(motor_driver_A1B_port, motor_driver_A1B_pin);
-        GPIO_WriteHigh(motor_driver_B1B_port, motor_driver_B1B_pin);
+        rotate_right();
 
         /*distance = tim3_get_distance(tim3_value);
         uint16_t distance_to_sent = distance;
         send_str(int_to_str(distance_to_sent)); 
         send_str("\n\r");*/
-         
-
     }
 }
