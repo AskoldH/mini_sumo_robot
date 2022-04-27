@@ -36,12 +36,14 @@ INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler, 6)
     // if interrupt caused by rise edge -> reset timer 3 and set that next interrupt had to be fall edge
     if (rise_fall)
     {
+        GPIO_WriteHigh(on_board_led_port, on_board_led_pin);
         tim3_reset();
         rise_fall = 0;
     }
     // else if interrupt caused by fall edge -> write timer 3 counter value into variable and set that next interrupt had to be rise edge
     else if(!(rise_fall))
     {
+        GPIO_WriteLow(on_board_led_port, on_board_led_pin);
         if (TIM3_GetFlagStatus(TIM3_FLAG_UPDATE) != SET)
         {
             send_distance_via_uart(TIM3_GetCounter());
@@ -101,9 +103,7 @@ void main(void)
     {
         delay_ms(100);
         GPIO_WriteHigh(trig_port, trig_pin);
-        GPIO_WriteHigh(on_board_led_port, on_board_led_pin);
         delay_ms(100);
         GPIO_WriteLow(trig_port, trig_pin);
-        GPIO_WriteLow(on_board_led_port, on_board_led_pin);
     }
 }
