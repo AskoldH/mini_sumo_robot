@@ -17,18 +17,16 @@
 #define on_board_led_port GPIOC
 #define on_board_led_pin GPIO_PIN_5
 
-// input from infrared sensor on the right
+// output from infrared sensor on the right
 #define ir_sensor_right_port GPIOE
 #define ir_sensor_right_pin GPIO_PIN_5
 
-// input from infrared sensor on the right
+// output from infrared sensor on the right
 #define ir_sensor_left_port GPIOC
 #define ir_sensor_left_pin GPIO_PIN_6
 
 
 // declere needed global variables
-uint16_t tim3_value; 
-float distance; 
 int rise_fall = 1; 
 
 
@@ -44,7 +42,14 @@ INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler, 6)
     // else if interrupt caused by fall edge -> write timer 3 counter value into variable and set that next interrupt had to be rise edge
     else if(!(rise_fall))
     {
-        tim3_value = TIM3_GetCounter();
+        if (TIM3_GetFlagStatus(TIM3_FLAG_UPDATE) != SET)
+        {
+            send_distance_via_uart(TIM3_GetCounter());
+        }
+        else if (TIM3_GetFlagStatus(TIM3_FLAG_UPDATE) == SET)
+        {
+            send_str("Čítač přetekl!");
+        }
         rise_fall = 1;
     }
 }
@@ -68,8 +73,8 @@ void main(void)
     GPIO_Init(on_board_led_port, on_board_led_pin, GPIO_MODE_OUT_PP_LOW_SLOW); // init on board led
 
     // ultrasonic sensor init ports
-    //GPIO_Init(trig_port, trig_pin, GPIO_MODE_OUT_PP_LOW_SLOW); // trig
-    //GPIO_Init(echo_port, echo_pin, GPIO_MODE_IN_FL_IT); // echo
+    GPIO_Init(trig_port, trig_pin, GPIO_MODE_OUT_PP_LOW_SLOW); // trig
+    GPIO_Init(echo_port, echo_pin, GPIO_MODE_IN_FL_IT); // echo
 
     // infrared sensor init ports
     GPIO_Init(ir_sensor_left_port, ir_sensor_left_pin, GPIO_MODE_IN_FL_IT);
@@ -82,8 +87,8 @@ void main(void)
     ITC_SetSoftwarePriority(ITC_IRQ_PORTC, ITC_PRIORITYLEVEL_0); //interrupts priorities for port C
 
     // ultrasonic sensor interrupts 
-    //EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOD, EXTI_SENSITIVITY_RISE_FALL); // interrupts settup for port D
-    //ITC_SetSoftwarePriority(ITC_IRQ_PORTD, ITC_PRIORITYLEVEL_0);
+    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOD, EXTI_SENSITIVITY_RISE_FALL); // interrupts settup for port D
+    ITC_SetSoftwarePriority(ITC_IRQ_PORTD, ITC_PRIORITYLEVEL_0);
 
     enableInterrupts();
     
@@ -92,13 +97,13 @@ void main(void)
     tim3_init();
     motor_pins_init();
 
-    while (1)
+    while(1)
     {
-        rotate_right();
-
-        /*distance = tim3_get_distance(tim3_value);
-        uint16_t distance_to_sent = distance;
-        send_str(int_to_str(distance_to_sent)); 
-        send_str("\n\r");*/
+        delay_ms(100);
+        GPIO_WriteHigh(trig_port, trig_pin);
+        GPIO_WriteHigh(on_board_led_port, on_board_led_pin);
+        delay_ms(100);
+        GPIO_WriteLow(trig_port, trig_pin);
+        GPIO_WriteLow(on_board_led_port, on_board_led_pin);
     }
 }
