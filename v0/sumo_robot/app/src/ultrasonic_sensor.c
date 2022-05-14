@@ -12,7 +12,7 @@ void tim3_reset(void)
     TIM3_SetCounter(0);
 }
 
-float tim3_get_distance(uint16_t tim3_value)
+int tim3_get_distance(uint16_t tim3_value)
 {
     uint16_t time_in_us = tim3_value/4; // devided timer value to get time in microseconds
 
@@ -23,8 +23,7 @@ float tim3_get_distance(uint16_t tim3_value)
 
 void send_distance_via_uart(uint16_t tim3_value)
 {   
-    float distance = tim3_get_distance(tim3_value);
-    uint16_t distance_to_sent = distance;
-    send_str(int_to_str(distance_to_sent)); 
+    uint16_t distance = tim3_get_distance(tim3_value);
+    send_str(int_to_str(distance)); 
     send_str("\n\r");
 }

@@ -21,13 +21,14 @@
 #define ir_sensor_right_port GPIOE
 #define ir_sensor_right_pin GPIO_PIN_5
 
-// output from infrared sensor on the right
+// output from infrared sensor on the left
 #define ir_sensor_left_port GPIOC
 #define ir_sensor_left_pin GPIO_PIN_6
 
 
-// declere needed global variables
+// declere global variables
 int rise_fall = 1; 
+int reading_speed = 50;
 
 
 // interrupt handler for ultrasonic sensor 
@@ -44,13 +45,66 @@ INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler, 6)
     else if(!(rise_fall))
     {
         GPIO_WriteLow(on_board_led_port, on_board_led_pin);
+
         if (TIM3_GetFlagStatus(TIM3_FLAG_UPDATE) != SET)
         {
-            send_distance_via_uart(TIM3_GetCounter());
+            uint16_t distance = tim3_get_distance(TIM3_GetCounter());
+            //send_str(int_to_str(distance)); 
+            //send_str("distance\n\r");
+
+            if (distance < 8)
+            {
+                rotate_right(1000);
+                delay_ms(1000);
+                rotate_left(1000);
+                delay_ms(1000);
+                sim();
+            }
+            else if (distance < 16)
+            {
+                go_straight(250);
+                reading_speed = 300;
+            }
+            else if (distance < 24)
+            {
+                go_straight(250);
+                reading_speed = 300;
+            }
+            else if (distance < 32)
+            {
+                go_straight(250);
+                reading_speed = 300;
+            }
+            else if (distance < 40)
+            {
+                go_straight(250);
+                reading_speed = 300;
+            }
+            else if (distance < 48)
+            {
+                go_straight(250);
+                reading_speed = 300;
+            }
+            else if (distance < 56)
+            {
+                go_straight(250);
+                reading_speed = 300;
+            }
+            else
+            {
+            rotate_left(20);
+            go_straight(20);
+            reading_speed = 50;      
+            }
         }
         else if (TIM3_GetFlagStatus(TIM3_FLAG_UPDATE) == SET)
         {
-            send_str("Čítač přetekl!");
+            // false value -> timer overflow
+            rotate_left(20);
+            go_straight(20);
+            reading_speed = 50;
+            //send_str("Čítač přetekl!\n\r");
+
         }
         rise_fall = 1;
     }
@@ -60,13 +114,31 @@ INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler, 6)
 // interrupt handler for right infrared sensor
 INTERRUPT_HANDLER(EXTI_PORTE_IRQHandler, 7)
 {
-    send_str("Right infrared sensor is on black (logical 0)\n\r");
+    /*go_gay(500);
+    delay_ms(500);
+
+    GPIO_WriteHigh(on_board_led_port, on_board_led_pin);
+    delay_ms(500);
+    GPIO_WriteLow(on_board_led_port, on_board_led_pin);*/
+
+    // send_str("Right infrared sensor is on black (logical 0)\n\r");
 }
 
 // interrupt handler for left infrared sensor
 INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
-{
-    send_str("Left infrared sensor is on black (logical 0)\n\r");
+{   
+    /*go_gay(500);
+    delay_ms(500);
+
+    GPIO_WriteHigh(on_board_led_port, on_board_led_pin);
+    delay_ms(250);
+    GPIO_WriteLow(on_board_led_port, on_board_led_pin);
+    delay_ms(250);
+    GPIO_WriteHigh(on_board_led_port, on_board_led_pin);
+    delay_ms(250);
+    GPIO_WriteLow(on_board_led_port, on_board_led_pin);*/
+
+    // send_str("Left infrared sensor is on black (logical 0)\n\r");
 }
 
 void main(void)
@@ -83,10 +155,10 @@ void main(void)
     GPIO_Init(ir_sensor_right_port, ir_sensor_right_pin, GPIO_MODE_IN_FL_IT);
 
     // infrared sensors interrupts
-    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOE, EXTI_SENSITIVITY_RISE_ONLY); // interrupts settup for port E - right ir sensor
-    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOC, EXTI_SENSITIVITY_RISE_ONLY); // interrupts settup for port C - left ir sensor
-    ITC_SetSoftwarePriority(ITC_IRQ_PORTE, ITC_PRIORITYLEVEL_0); //interrupts priorities for port E
-    ITC_SetSoftwarePriority(ITC_IRQ_PORTC, ITC_PRIORITYLEVEL_0); //interrupts priorities for port C
+    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOE, EXTI_SENSITIVITY_FALL_ONLY); // interrupts settup for port E - right ir sensor
+    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOC, EXTI_SENSITIVITY_FALL_ONLY); // interrupts settup for port C - left ir sensor
+    ITC_SetSoftwarePriority(ITC_IRQ_PORTE, ITC_PRIORITYLEVEL_1); //interrupts priorities for port E
+    ITC_SetSoftwarePriority(ITC_IRQ_PORTC, ITC_PRIORITYLEVEL_1); //interrupts priorities for port C
 
     // ultrasonic sensor interrupts 
     EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOD, EXTI_SENSITIVITY_RISE_FALL); // interrupts settup for port D
@@ -94,16 +166,16 @@ void main(void)
 
     enableInterrupts();
     
-    uart1_init();
+    uart1_init(); 
     tim4_init();
     tim3_init();
     motor_pins_init();
 
     while(1)
     {
-        delay_ms(100);
+        delay_ms(reading_speed);
         GPIO_WriteHigh(trig_port, trig_pin);
-        delay_ms(100);
+        delay_ms(1);
         GPIO_WriteLow(trig_port, trig_pin);
     }
 }

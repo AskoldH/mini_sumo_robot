@@ -2,5 +2,10 @@
     "cSpell.enabled": false,
     "files.exclude": {
         "build/": true
+    },
+    "files.associations": {
+        "stm8s.h": "c",
+        "delay.h": "c",
+        "moving.h": "c"
     }
 }
