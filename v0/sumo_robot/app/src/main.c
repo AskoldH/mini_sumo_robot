@@ -10,8 +10,8 @@
 #define trig_pin GPIO_PIN_4
 
 // echo for ultrasonic sensor
-#define echo_port GPIOC
-#define echo_pin GPIO_PIN_2
+#define echo_port GPIOD
+#define echo_pin GPIO_PIN_6
 
 // on board led for testing 
 #define on_board_led_port GPIOC
@@ -39,16 +39,16 @@ void searching()
 
 void to_object()
 {
-//    go_straight(3999);
+    go_straight(3999);
 }
 
 void near_object()
 {
-//    rotate_left(3999);
-//    delay_ms(2000);
-//    rotate_right(3999);
-//    delay_ms(2000);
-//    stop();
+    rotate_left(1000);
+    delay_ms(2000);
+    rotate_right(1000);
+    delay_ms(2000);
+    stop();
 }
 
 void triger_triger_lul(int on)
@@ -81,8 +81,6 @@ INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler,6)
     if (TIM3_GetFlagStatus(TIM3_FLAG_UPDATE)!= SET)
     {
         uint16_t distance = tim3_get_distance(TIM3_GetCounter());
-        send_str(int_to_str(distance));
-        send_str("distance\n\r");
 
         if (distance < 8)
         {
@@ -174,12 +172,9 @@ void main(void) {
     motor_pins_init();
     tim2_PWM_init();
 
-    //delay_ms(5000);
-    while (1) {
-        send_str(".\n\r");
-        GPIO_WriteHigh(trig_port, trig_pin);
-        delay_ms(1);
-        GPIO_WriteLow(trig_port, trig_pin);
-        delay_ms(50);
+    delay_ms(5000);         // start delay 5s
+
+    while (true) {
+        triger_triger_lul(true);  // if parameter true -> function is sending pulses on ultrasonic sensor triger pin
     }
 }
