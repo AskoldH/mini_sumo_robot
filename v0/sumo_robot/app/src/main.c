@@ -10,8 +10,8 @@
 #define trig_pin GPIO_PIN_4
 
 // echo for ultrasonic sensor
-#define echo_port GPIOD
-#define echo_pin GPIO_PIN_3
+#define echo_port GPIOC
+#define echo_pin GPIO_PIN_2
 
 // on board led for testing 
 #define on_board_led_port GPIOC
@@ -27,18 +27,50 @@
 
 
 // declere global variables
-int rise_fall = 1; 
+int rise_fall = 1;
 int reading_speed = 50;
+int false = 0;
+int true = 1;
 
+void searching()
+{
+//    turning(1500, 4000);
+}
+
+void to_object()
+{
+//    go_straight(3999);
+}
+
+void near_object()
+{
+//    rotate_left(3999);
+//    delay_ms(2000);
+//    rotate_right(3999);
+//    delay_ms(2000);
+//    stop();
+}
+
+void triger_triger_lul(int on)
+{
+    if (on){
+        GPIO_WriteHigh(trig_port, trig_pin);
+        delay_ms(1);
+        GPIO_WriteLow(trig_port, trig_pin);
+        delay_ms(50);
+    }
+}
 
 // interrupt handler for ultrasonic sensor 
-INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler, 6)
+INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler,6)
 {
     // if interrupt caused by rise edge -> reset timer 3 and set that next interrupt had to be fall edge
     if (rise_fall)
     {
         GPIO_WriteHigh(on_board_led_port, on_board_led_pin);
+
         tim3_reset();
+
         rise_fall = 0;
     }
     // else if interrupt caused by fall edge -> write timer 3 counter value into variable and set that next interrupt had to be rise edge
@@ -46,74 +78,41 @@ INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler, 6)
     {
         GPIO_WriteLow(on_board_led_port, on_board_led_pin);
 
-        if (TIM3_GetFlagStatus(TIM3_FLAG_UPDATE) != SET)
-        {
-            uint16_t distance = tim3_get_distance(TIM3_GetCounter());
-            //send_str(int_to_str(distance)); 
-            //send_str("distance\n\r");
+    if (TIM3_GetFlagStatus(TIM3_FLAG_UPDATE)!= SET)
+    {
+        uint16_t distance = tim3_get_distance(TIM3_GetCounter());
+        send_str(int_to_str(distance));
+        send_str("distance\n\r");
 
-            if (distance < 8)
-            {
-                rotate_right(1000);
-                delay_ms(1000);
-                rotate_left(1000);
-                delay_ms(1000);
-                sim();
-            }
-            else if (distance < 16)
-            {
-                go_straight(250);
-                reading_speed = 300;
-            }
-            else if (distance < 24)
-            {
-                go_straight(250);
-                reading_speed = 300;
-            }
-            else if (distance < 32)
-            {
-                go_straight(250);
-                reading_speed = 300;
-            }
-            else if (distance < 40)
-            {
-                go_straight(250);
-                reading_speed = 300;
-            }
-            else if (distance < 48)
-            {
-                go_straight(250);
-                reading_speed = 300;
-            }
-            else if (distance < 56)
-            {
-                go_straight(250);
-                reading_speed = 300;
-            }
-            else
-            {
-            rotate_left(20);
-            go_straight(20);
-            reading_speed = 50;      
-            }
-        }
-        else if (TIM3_GetFlagStatus(TIM3_FLAG_UPDATE) == SET)
+        if (distance < 8)
         {
-            // false value -> timer overflow
-            rotate_left(20);
-            go_straight(20);
-            reading_speed = 50;
-            //send_str("Čítač přetekl!\n\r");
+            near_object();
 
         }
-        rise_fall = 1;
+        else if (distance < 40)
+        {
+            to_object();
+        }
+        else
+        {
+            searching();
+        }
+    }
+    else if (TIM3_GetFlagStatus(TIM3_FLAG_UPDATE)== SET)
+    {
+        // false value -> timer overflow
+        searching();
+        //send_str("Čítač přetekl!\n\r");
+    }
+    rise_fall = 1;
     }
 }
 
 
 // interrupt handler for right infrared sensor
-INTERRUPT_HANDLER(EXTI_PORTE_IRQHandler, 7)
+INTERRUPT_HANDLER(EXTI_PORTE_IRQHandler,7)
 {
+    // TODO UPDATE THIS CRAP
     /*go_gay(500);
     delay_ms(500);
 
@@ -125,8 +124,9 @@ INTERRUPT_HANDLER(EXTI_PORTE_IRQHandler, 7)
 }
 
 // interrupt handler for left infrared sensor
-INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
-{   
+INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler,5)
+{
+    // TODO UPDATE THIS CRAP2
     /*go_gay(500);
     delay_ms(500);
 
@@ -139,10 +139,9 @@ INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler, 5)
     GPIO_WriteLow(on_board_led_port, on_board_led_pin);*/
 
     // send_str("Left infrared sensor is on black (logical 0)\n\r");
-}
+    }
 
-void main(void)
-{
+void main(void) {
     CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1); // FREQ MCU 16MHz
     GPIO_Init(on_board_led_port, on_board_led_pin, GPIO_MODE_OUT_PP_LOW_SLOW); // init on board led
 
@@ -155,8 +154,10 @@ void main(void)
     GPIO_Init(ir_sensor_right_port, ir_sensor_right_pin, GPIO_MODE_IN_FL_IT);
 
     // infrared sensors interrupts
-    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOE, EXTI_SENSITIVITY_FALL_ONLY); // interrupts settup for port E - right ir sensor
-    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOC, EXTI_SENSITIVITY_FALL_ONLY); // interrupts settup for port C - left ir sensor
+    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOE,
+                              EXTI_SENSITIVITY_FALL_ONLY); // interrupts settup for port E - right ir sensor
+    EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOC,
+                              EXTI_SENSITIVITY_FALL_ONLY); // interrupts settup for port C - left ir sensor
     ITC_SetSoftwarePriority(ITC_IRQ_PORTE, ITC_PRIORITYLEVEL_1); //interrupts priorities for port E
     ITC_SetSoftwarePriority(ITC_IRQ_PORTC, ITC_PRIORITYLEVEL_1); //interrupts priorities for port C
 
@@ -165,17 +166,20 @@ void main(void)
     ITC_SetSoftwarePriority(ITC_IRQ_PORTD, ITC_PRIORITYLEVEL_0);
 
     enableInterrupts();
-    
-    uart1_init(); 
+
+    uart1_init();
     tim4_init();
     tim3_init();
+    tim2_init();
     motor_pins_init();
+    tim2_PWM_init();
 
-    while(1)
-    {
-        delay_ms(reading_speed);
+    //delay_ms(5000);
+    while (1) {
+        send_str(".\n\r");
         GPIO_WriteHigh(trig_port, trig_pin);
         delay_ms(1);
         GPIO_WriteLow(trig_port, trig_pin);
+        delay_ms(50);
     }
 }
