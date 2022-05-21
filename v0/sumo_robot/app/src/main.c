@@ -1,3 +1,6 @@
+// TODO MAKE DESCRIPTIONS AND COMMENTS TO DESCRIBE WHAT IS HAPPENNING
+// TODO CLEAN CODE !!!!!
+
 #include "stm8s.h"
 #include "uart.h"
 #include "ultrasonic_sensor.h"
@@ -27,28 +30,44 @@
 
 
 // declere global variables
-int rise_fall = 1;
-int reading_speed = 50;
-int false = 0;
-int true = 1;
+int rise_fall = 1;          // for ultrasonic sensor -> needed for determinating if interrupt was raised by rise or fall edge
+int false = 0;              // idk how and if boolean works here so ...
+int true = 1;               // yeah
 
 void searching()
 {
-//    turning(1500, 4000);
+    // TODO FIND THE RIGHT RATIO
+    turning(1500, 4000);
 }
 
-void to_object()
+void to_object(uint16_t distance)
 {
-    go_straight(3999);
+    if (distance > 40)
+    {
+        go_straight(1500);
+    }
+    else if (distance > 20)
+    {
+        go_straight(2500);
+    }
+    else
+    {
+        go_straight(4000);
+    }
 }
 
 void near_object()
 {
+    disableInterrupts();
     rotate_left(1000);
     delay_ms(2000);
+    stop();
+    delay_ms(1000);
     rotate_right(1000);
     delay_ms(2000);
     stop();
+    delay_ms(1000);
+    enableInterrupts();
 }
 
 void triger_triger_lul(int on)
@@ -64,21 +83,19 @@ void triger_triger_lul(int on)
 // interrupt handler for ultrasonic sensor 
 INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler,6)
 {
-    // if interrupt caused by rise edge -> reset timer 3 and set that next interrupt had to be fall edge
+    // if interrupt caused by rise edge
     if (rise_fall)
     {
-        GPIO_WriteHigh(on_board_led_port, on_board_led_pin);
-
-        tim3_reset();
-
-        rise_fall = 0;
+        GPIO_WriteHigh(on_board_led_port, on_board_led_pin);        // on on board led for visualization
+        tim3_reset();                                               // reset timer 3
+        rise_fall = 0;                                              // rise fall = 0 -> next interrupt won't be execuded this if
     }
     // else if interrupt caused by fall edge -> write timer 3 counter value into variable and set that next interrupt had to be rise edge
     else if(!(rise_fall))
     {
-        GPIO_WriteLow(on_board_led_port, on_board_led_pin);
+        GPIO_WriteLow(on_board_led_port, on_board_led_pin);         // off on board led for visualization
 
-    if (TIM3_GetFlagStatus(TIM3_FLAG_UPDATE)!= SET)
+    if (TIM3_GetFlagStatus(TIM3_FLAG_UPDATE)!= SET)                 // TODO I ENDED UP HERE WITH COMMENTS
     {
         uint16_t distance = tim3_get_distance(TIM3_GetCounter());
 
@@ -87,9 +104,9 @@ INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler,6)
             near_object();
 
         }
-        else if (distance < 40)
+        else if (distance < 60)
         {
-            to_object();
+            to_object(distance);
         }
         else
         {
@@ -110,7 +127,7 @@ INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler,6)
 // interrupt handler for right infrared sensor
 INTERRUPT_HANDLER(EXTI_PORTE_IRQHandler,7)
 {
-    // TODO UPDATE THIS CRAP
+    // FIXME UPDATE THIS CRAP
     /*go_gay(500);
     delay_ms(500);
 
@@ -124,7 +141,7 @@ INTERRUPT_HANDLER(EXTI_PORTE_IRQHandler,7)
 // interrupt handler for left infrared sensor
 INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler,5)
 {
-    // TODO UPDATE THIS CRAP2
+    // FIXME UPDATE THIS CRAP2
     /*go_gay(500);
     delay_ms(500);
 
@@ -148,29 +165,31 @@ void main(void) {
     GPIO_Init(echo_port, echo_pin, GPIO_MODE_IN_FL_IT); // echo
 
     // infrared sensor init ports
-    GPIO_Init(ir_sensor_left_port, ir_sensor_left_pin, GPIO_MODE_IN_FL_IT);
-    GPIO_Init(ir_sensor_right_port, ir_sensor_right_pin, GPIO_MODE_IN_FL_IT);
+    GPIO_Init(ir_sensor_left_port, ir_sensor_left_pin, GPIO_MODE_IN_FL_IT); // init left ir sensor
+    GPIO_Init(ir_sensor_right_port, ir_sensor_right_pin, GPIO_MODE_IN_FL_IT); // init right ir sensor
 
     // infrared sensors interrupts
     EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOE,
-                              EXTI_SENSITIVITY_FALL_ONLY); // interrupts settup for port E - right ir sensor
+                              EXTI_SENSITIVITY_FALL_ONLY);  // interrupts settup for port E - right ir sensor
     EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOC,
-                              EXTI_SENSITIVITY_FALL_ONLY); // interrupts settup for port C - left ir sensor
-    ITC_SetSoftwarePriority(ITC_IRQ_PORTE, ITC_PRIORITYLEVEL_1); //interrupts priorities for port E
-    ITC_SetSoftwarePriority(ITC_IRQ_PORTC, ITC_PRIORITYLEVEL_1); //interrupts priorities for port C
+                              EXTI_SENSITIVITY_FALL_ONLY);  // interrupts settup for port C - left ir sensor
+    ITC_SetSoftwarePriority(ITC_IRQ_PORTE,
+                            ITC_PRIORITYLEVEL_1);           // interrupts priorities for port E -> higher prio than ultrasonic
+    ITC_SetSoftwarePriority(ITC_IRQ_PORTC,
+                            ITC_PRIORITYLEVEL_1);           // interrupts priorities for port C -> higher prio than ultrasonic
 
     // ultrasonic sensor interrupts 
     EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOD, EXTI_SENSITIVITY_RISE_FALL); // interrupts settup for port D
-    ITC_SetSoftwarePriority(ITC_IRQ_PORTD, ITC_PRIORITYLEVEL_0);
+    ITC_SetSoftwarePriority(ITC_IRQ_PORTD, ITC_PRIORITYLEVEL_0); // interrupts priorities for port D
 
-    enableInterrupts();
+    enableInterrupts(); // IMPORTANT TO ENABLE INTERRUPTS!
 
-    uart1_init();
-    tim4_init();
-    tim3_init();
-    tim2_init();
-    motor_pins_init();
-    tim2_PWM_init();
+    uart1_init();           // init uart -> TODO delete if not needed anymore
+    tim4_init();            // init timer 4 -> used for function delay_ms
+    tim3_init();            // init timer 3 -> used for calculating distance with ultrasonic sensor
+    tim2_init();            // init timer 2 -> used for PWM
+    tim2_PWM_init();        // init timer 2 PWM chanels -> used for motor control
+    motor_pins_init();      // init motor pins -> used for motor control
 
     delay_ms(5000);         // start delay 5s
 
