@@ -37,7 +37,7 @@ int true = 1;               // yeah
 void searching()
 {
     // TODO FIND THE RIGHT RATIO
-    turning(1500, 4000);
+    turning(1200, 4000);
 }
 
 void to_object(uint16_t distance)
@@ -59,14 +59,14 @@ void to_object(uint16_t distance)
 void near_object()
 {
     disableInterrupts();
-    rotate_left(1000);
-    delay_ms(2000);
-    stop();
+    rotate_left(2000);
     delay_ms(1000);
-    rotate_right(1000);
-    delay_ms(2000);
-    stop();
-    delay_ms(1000);
+//    stop();
+//    delay_ms(1000);
+//    rotate_right(1000);
+//    delay_ms(2000);
+//    stop();
+//    delay_ms(1000);
     enableInterrupts();
 }
 
@@ -99,7 +99,7 @@ INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler,6)
     {
         uint16_t distance = tim3_get_distance(TIM3_GetCounter());
 
-        if (distance < 8)
+        if (distance < 15)
         {
             near_object();
 
@@ -191,6 +191,7 @@ void main(void) {
     tim2_PWM_init();        // init timer 2 PWM chanels -> used for motor control
     motor_pins_init();      // init motor pins -> used for motor control
 
+    stop();
     delay_ms(5000);         // start delay 5s
 
     while (true) {
