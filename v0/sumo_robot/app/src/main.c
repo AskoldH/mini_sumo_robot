@@ -194,6 +194,15 @@ void main(void) {
     delay_ms(5000);         // start delay 5s
 
     while (true) {
-        triger_triger_lul(true);  // if parameter true -> function is sending pulses on ultrasonic sensor triger pin
+        turning(2000, 4000);
+        delay_ms(5000);
+        stop();
+        delay_ms(500);
+        turning(4000, 2000);
+        delay_ms(5000);
+        stop();
+        delay_ms(500);
+
+        triger_triger_lul(false);  // if parameter true -> function is sending pulses on ultrasonic sensor triger pin
     }
 }
