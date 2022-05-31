@@ -47,14 +47,14 @@ void tim2_PWM_init() {
     TIM2_OC2PreloadConfig(ENABLE); // left wheel
 }
 
-void stop() {
+void stop() {                                                   // stop motors
     TIM2_SetCompare1(0);
     GPIO_WriteLow(motor_driver_B1B_port, motor_driver_B1B_pin);
     TIM2_SetCompare2(0);
     GPIO_WriteLow(motor_driver_A1B_port, motor_driver_A1B_pin);
 }
 
-void go_straight(uint16_t speed) {
+void go_straight(uint16_t speed) {                              // parameter range 0 - 4000 -> works well with over 800 -> the higher the faster
     GPIO_WriteLow(motor_driver_A1B_port, motor_driver_A1B_pin);
     GPIO_WriteLow(motor_driver_B1B_port, motor_driver_B1B_pin);
 
@@ -70,7 +70,7 @@ void go_gay() {
     GPIO_WriteHigh(motor_driver_B1B_port, motor_driver_B1B_pin);
 }
 
-void rotate_right(uint16_t right_wheel_speed) {
+void rotate_right(uint16_t right_wheel_speed) {                     // parameter range 0 - 4000 -> works well with over 800
     TIM2_SetCompare2(0);
     GPIO_WriteLow(motor_driver_A1B_port, motor_driver_A1B_pin);
 
@@ -78,7 +78,7 @@ void rotate_right(uint16_t right_wheel_speed) {
     GPIO_WriteHigh(motor_driver_B1B_port, motor_driver_B1B_pin);
 }
 
-void rotate_left(uint16_t left_wheel_speed) {
+void rotate_left(uint16_t left_wheel_speed) {                      // parameter range 0 - 4000 -> works well with over 800
     TIM2_SetCompare1(0);
     GPIO_WriteLow(motor_driver_B1B_port, motor_driver_B1B_pin);
 
@@ -86,7 +86,7 @@ void rotate_left(uint16_t left_wheel_speed) {
     GPIO_WriteHigh(motor_driver_A1B_port, motor_driver_A1B_pin);
 }
 
-void turning(uint16_t left_wheel_speed, uint16_t right_wheel_speed) {
+void turning(uint16_t left_wheel_speed, uint16_t right_wheel_speed) {   // parameters range 0 - 4000 -> works well with over 800
     TIM2_SetCompare1(right_wheel_speed);
     TIM2_SetCompare2(left_wheel_speed);
 
