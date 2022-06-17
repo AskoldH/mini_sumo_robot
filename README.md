@@ -37,7 +37,7 @@ dva infračervené senzory FC-51, které hlídají, aby robot nevyjel z arény a
 hledání oponenta Ultrazvukový senzor HC-SR04. Motory jsou ovládány momocí H-můstku L9110S. Pohon zajišťují
 znova nabitelná baterie se stabilizátorem napětí L7805.
 <p align="center"><img src="media/bot.png"><p>
-<p align="center"><img src="media/real_fotka.png"><p>
+<p align="center"><img src="media/fotka.png"><p>
 
 ---
 
