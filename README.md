@@ -1,6 +1,6 @@
 <h1 align="center"> Mini sumo robot </h1>
-<p style="text-align: center;">Závěrečný projekt Jiřího Koldy a Askolda Horčičky z MIT.</p>
-<p style="text-align: center;">(3.B, 2021/22)</p>
+<p align="center">Závěrečný projekt Jiřího Koldy a Askolda Horčičky z MIT.</p>
+<p align="center">(3.B, 2021/22)</p>
 
 ---
 ## Představení:
