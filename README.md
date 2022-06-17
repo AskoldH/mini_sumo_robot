@@ -14,8 +14,9 @@ to je velikost 10x10 cm (výška neomezena) a váha nesmí převišovat 500 g. A
 ## Vývojový diagram:
 
 
-Začali jsme návrhem, co by měl robot dělat, proto máme vývojový diagram, který nám to hodně zhruba
-prozradí
+<p>Začali jsme návrhem, co by měl robot dělat, proto máme vývojový diagram, který nám to hodně zhruba
+prozradí</p>>
+
 ---
 <p align="center"><img src="media/vyvojak_final.png"><p>
 
