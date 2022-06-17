@@ -5,8 +5,8 @@
 ---
 ## Představení:
 
-<p>Mini sumo je jednou z kategorií zápasení robotů. Cílem zápasení je vystrčit svého oponenta z arény,
-jakýmkoli způsobem, robot ale musí splňovat podmínky dané kategorie, konktrétně v kategorii mini sumo 
+<p>Mini sumo je jednou z kategorií zápasení robotů. Cílem zápasení je vystrčit svého oponenta z arény
+jakýmkoli způsobem, robot ale musí splňovat podmínky dané kategorie. Konktrétně v kategorii mini sumo 
 to je velikost 10x10 cm (výška neomezena) a váha nesmí převišovat 500 g. Aréna pak má 70 cm v průměru.
 </p>
 
