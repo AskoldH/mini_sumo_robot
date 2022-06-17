@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/drivers/src/stm8s_tim2.c" charset="windows-1250" />
+    <file url="file://$PROJECT_DIR$/drivers/src/stm8s_tim3.c" charset="windows-1250" />
+    <file url="file://$PROJECT_DIR$/drivers/src/stm8s_tim5.c" charset="windows-1250" />
+  </component>
+</project>
