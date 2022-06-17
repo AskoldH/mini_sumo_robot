@@ -13,3 +13,4 @@ Závěrečný MIT projekt Pana Kolduse a Pana Pleskiho, neboli mini sumo robot c
 - Stabilizátor napětí L7805
 - STM8 Nucleo
 - Vypínač
+- 
