@@ -121,19 +121,23 @@ INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler,6)
 INTERRUPT_HANDLER(EXTI_PORTE_IRQHandler,7)          // TODO find out the right moves, moves like jagger
 {
     disableInterrupts();                            // I need to disable interrupts cos of the delay
+    go_gay();
+    delay_ms(300);
     rotate_left(2000);
-    delay_ms(1000);
-    enableInterrupts();                             // enable interrupts back again
+    delay_ms(200);
+    enableInterrupts();                               // enable interrupts back again
 }
 
 // interrupt handler for left infrared sensor
 INTERRUPT_HANDLER(EXTI_PORTC_IRQHandler,5)         // TODO find out the right moves, moves like jagger
 {
-    disableInterrupts();                           // I need to disable interrupts cos of the delay
+    disableInterrupts();                            // I need to disable interrupts cos of the delay
+    go_gay();
+    delay_ms(300);
     rotate_right(2000);
-    delay_ms(1000);
-    enableInterrupts();                            // enable interrupts back again
-    }
+    delay_ms(200);
+    enableInterrupts();                              // enable interrupts back again
+}
 
 void main(void) {
     CLK_HSIPrescalerConfig(CLK_PRESCALER_HSIDIV1); // FREQ MCU 16MHz
@@ -161,7 +165,7 @@ void main(void) {
     EXTI_SetExtIntSensitivity(EXTI_PORT_GPIOD, EXTI_SENSITIVITY_RISE_FALL); // interrupts settup for port D
     ITC_SetSoftwarePriority(ITC_IRQ_PORTD, ITC_PRIORITYLEVEL_0); // interrupts priorities for port D
 
-    enableInterrupts(); // IMPORTANT TO ENABLE INTERRUPTS!
+
 
     uart1_init();           // init uart -> TODO delete if not needed anymore
     tim4_init();            // init timer 4 -> used for function delay_ms
@@ -171,7 +175,13 @@ void main(void) {
     motor_pins_init();      // init motor pins -> used for motor control
     stop();
 
+    turning(4000, 1500);
+    delay_ms(300);
+    go_straight(3000);
+    delay_ms(300);
+
     delay_ms(5000);         // start delay 5s
+    enableInterrupts(); // IMPORTANT TO ENABLE INTERRUPTS!
 
     while (true) {
         triger_triger_lul(true);  // if parameter true -> function is sending pulses on ultrasonic sensor triger pin
