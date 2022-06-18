@@ -43,6 +43,10 @@ H_MŮSTEK --> MOTORY
 ```
 ---
 
+## Schéma
+Velice základní schéma nám ukazuje zapojení na příslušné piny pro příslušné součástky 
+<p align="center"><img src="media/schema_kicad_robot.png"><p>
+
 ## Komponenty, modelávání, hardwarová část
 ### - Seznam použitých součástek
 - Ultrazvukový senzor HC-SR04
