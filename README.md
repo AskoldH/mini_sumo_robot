@@ -7,7 +7,7 @@
 
 <p>Mini sumo je jednou z kategorií zápasení robotů. Cílem zápasení je vystrčit svého oponenta z arény
 jakýmkoli způsobem, robot ale musí splňovat podmínky dané kategorie. Konktrétně v kategorii mini sumo 
-to je velikost 10x10 cm (výška neomezena) a váha nesmí převišovat 500 g. Aréna pak má 70 cm v průměru.
+to je velikost 10x10 cm (výška neomezena) a váha nesmí převišovat 500 g. Aréna pak má 77 cm v průměru.
 </p>
 
 ---
@@ -18,8 +18,29 @@ to je velikost 10x10 cm (výška neomezena) a váha nesmí převišovat 500 g. A
 prozradí</p>
 
 ---
-<p align="center"><img src="media/vyvojak_final.png"><p>
+```mermaid
+graph LR
+START --> START_POHYBY
+START_POHYBY --> B{VIDÍM_SOUPEŘE} --> |NE| MÓD_HLEDÁNÍ
+B --> |ANO| A{JSEM_DOSTATEČNĚ_BLÍZKO} --> |NE| JEDU_K_SOUPEŘI
+JEDU_K_SOUPEŘI --> A
+A --> |ANO| ÚTOČNÝ_MÓD --> KONEC
+MÓD_HLEDÁNÍ --> B
+```
 
+---
+    
+## Blokové schéma 
+Blokové schéma se skládá z dvou infračervených senzorů a jednoho ultrazvukového, které májí své výstupy zapojené
+    do STM8 a následně STM8 ovládá H můstek, který řídí motory
+```mermaid
+flowchart LR
+IR_SENSOR_LEFT --> STM8
+IR_SENSOR_RIGHT --> STM8
+ULTRASONIC_SENSOR --> STM8
+STM8 --> H_MŮSTEK
+H_MŮSTEK --> MOTORY
+```
 ---
 
 ## Komponenty, modelávání, hardwarová část
