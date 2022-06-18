@@ -3,7 +3,7 @@
 <p align="center">(3.B, 2021/22)</p>
 
 ---
-## Představení:
+## Představení
 
 <p>Mini sumo je jednou z kategorií zápasení robotů. Cílem zápasení je vystrčit svého oponenta z arény
 jakýmkoli způsobem, robot ale musí splňovat podmínky dané kategorie. Konktrétně v kategorii mini sumo 
@@ -11,7 +11,7 @@ to je velikost 10x10 cm (výška neomezena) a váha nesmí převišovat 500 g. A
 </p>
 
 ---
-## Vývojový diagram:
+## Vývojový diagram
 
 
 <p>Začali jsme návrhem, co by měl robot dělat, proto máme vývojový diagram, který nám to hodně zhruba
@@ -136,3 +136,25 @@ krásných vod programovacího jazyka C, některé úvahy nad efektivnějším f
 Samozřejmě jsme na cestě narazili na spoustu problémů, nicméně se nám je podařilo všechny vyřešit, šlo o problémy
 od upadajícího kolečka přes špatné kontakty po vyřešení měření délky pulzu z ultrazvukového senzoru. Nemám pochyby o
 tom že náš robot zvítězí nejen při hodnocení ale i v aréně.
+    
+---
+    
+## Rozdělení práce
+Jiří Kolda: 
+- Návrh mechanické části       
+- Zajištění součástek
+- Vyřešení napájení
+- Modelování a 3D tisk částí robota
+- Sestavení robota
+- Zapojení robota
+    
+
+Askold Horčička:
+- Zapojení robota
+- Návrh programu a vyvojového diagramu
+- Programování funkcí pro ovládání senzorů a motorů
+- Spojení funkcí do finálního programu robota, režimy fungování...
+- Dokumentace (z většiny)
+    
+ Jednotlivé části projektu jsme spolu samozřejmě probírali, takže oba máme určitý nadhled nad projektem, nicméně 
+ dopodrobna by jsme dokázali vysvětlit vždy jen svou část.
